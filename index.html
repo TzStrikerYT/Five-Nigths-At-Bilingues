@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego de Terror</title>
+    <style>
+        /* Mantenemos los mismos estilos CSS */
+        body {
+            background-color: black;
+            color: #00FF00;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+        }
+
+        #juego {
+            text-align: center;
+            opacity: 0.8;
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+        }
+
+        #mensaje {
+            font-size: 2rem;
+            margin-top: 1rem;
+            transition: opacity 0.5s;
+        }
+
+        .jumpscare-video {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+            width: 80%;
+            height: auto;
+        }
+
+        #llave {
+            font-size: 4rem;
+            color: gold;
+            display: none;
+        }
+
+        .input-palabra {
+            font-size: 1.2rem;
+            padding: 5px;
+            margin: 5px;
+            border: 2px solid #00FF00;
+            background-color: black;
+            color: #00FF00;
+            width: 100px;
+            text-align: center;
+        }
+
+        #boton-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        #boton-verificar, #boton-siguiente-jugador {
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: black;
+            border: 2px solid #00FF00;
+            color: #00FF00;
+            transition: background-color 0.3s;
+            margin-bottom: 10px;
+        }
+
+        #boton-verificar:hover, #boton-siguiente-jugador:hover {
+            background-color: #00FF00;
+            color: black;
+        }
+
+        #boton-siguiente-jugador {
+            display: none;
+        }
+
+        #mensaje-jumpscare {
+            color: red;
+            font-weight: bold;
+            font-size: 3rem;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="juego">
+        <h1>Encuentra la llave</h1>
+        <p id="nivel-indicador">Nivel 1</p>
+        <p>Ingresa las palabras correctas para obtener la llave</p>
+        <input type="text" id="palabra1" class="input-palabra" placeholder="Palabra 1" autocomplete="off">
+        <input type="text" id="palabra2" class="input-palabra" placeholder="Palabra 2" autocomplete="off">
+        
+        <div id="boton-container">
+            <button id="boton-verificar">Verificar</button>
+            <button id="boton-siguiente-jugador">Siguiente jugador</button>
+        </div>
+        
+        <div id="mensaje">Ingresa las palabras...</div>
+        <div id="mensaje-jumpscare">¡Jugador secuestrado!</div>
+        <div id="llave">🔑</div>
+        
+        <!-- Videos para los jumpscares -->
+        <video id="jumpscare1" class="jumpscare-video" src="./jumpscare1.mp4" type="video/mp4"></video>
+        <video id="jumpscare2" class="jumpscare-video" src="./jumpscare2.mp4" type="video/mp4"></video>
+        <video id="jumpscare3" class="jumpscare-video" src="./jumpscare3.mp4" type="video/mp4"></video>
+        <video id="jumpscareNivel3" class="jumpscare-video" src="./jumpscareNivel3.mp4" type="video/mp4"></video>
+    </div>
+
+    <script>
+        const mensaje = document.getElementById('mensaje');
+        const mensajeJumpscare = document.getElementById('mensaje-jumpscare');
+        const llave = document.getElementById('llave');
+        const botonVerificar = document.getElementById('boton-verificar');
+        const botonSiguienteJugador = document.getElementById('boton-siguiente-jugador');
+        const nivelIndicador = document.getElementById('nivel-indicador');
+
+        // Obtener todos los videos de jumpscare
+        const jumpscareVideos = document.querySelectorAll('.jumpscare-video');
+        const jumpscareNivel3 = document.getElementById('jumpscareNivel3');
+
+        // Palabras correctas para cada nivel
+        const palabrasCorrectas = [
+            ["freedom", "soul"],    // Nivel 1
+            ["shadow", "oscuridad"], // Nivel 2
+            ["sangre", "now"],   // Nivel 3
+        ];
+
+        let nivelActual = 0;
+
+        // Función para obtener un jumpscare aleatorio (excluyendo el del nivel 3)
+        function obtenerJumpscareAleatorio() {
+            const jumpscaresDisponibles = Array.from(jumpscareVideos).filter(video => video.id !== 'jumpscareNivel3');
+            const indiceAleatorio = Math.floor(Math.random() * jumpscaresDisponibles.length);
+            return jumpscaresDisponibles[indiceAleatorio];
+        }
+
+        // Función para activar el jumpscare
+        function activarJumpscare() {
+            mensaje.style.opacity = '0';
+            
+            // Seleccionar el video de jumpscare según el nivel
+            let videoJumpscare;
+            if (nivelActual === 2) { // Nivel 3
+                videoJumpscare = jumpscareNivel3;
+            } else {
+                videoJumpscare = obtenerJumpscareAleatorio();
+            }
+
+            // Ocultar todos los videos primero
+            jumpscareVideos.forEach(video => {
+                video.style.display = 'none';
+                video.pause();
+                video.currentTime = 0;
+            });
+
+            // Mostrar y reproducir el video seleccionado
+            videoJumpscare.style.display = 'block';
+            videoJumpscare.play();
+
+            botonVerificar.style.display = 'none';
+            
+            videoJumpscare.onended = () => {
+                videoJumpscare.style.display = 'none';
+                mensajeJumpscare.style.display = 'block';
+                botonSiguienteJugador.style.display = 'block';
+            };
+        }
+
+        // Función para reiniciar el juego
+        function reiniciarJuego() {
+            document.getElementById('palabra1').value = '';
+            document.getElementById('palabra2').value = '';
+            mensaje.innerText = "Ingresa las palabras...";
+            mensajeJumpscare.style.display = 'none';
+            botonVerificar.style.display = 'block';
+            botonSiguienteJugador.style.display = 'none';
+            llave.style.display = 'none';
+            mensaje.style.opacity = '1';
+            nivelIndicador.innerText = `Nivel ${nivelActual + 1}`;
+
+            // Asegurarse de que todos los videos estén ocultos
+            jumpscareVideos.forEach(video => {
+                video.style.display = 'none';
+                video.pause();
+                video.currentTime = 0;
+            });
+        }
+
+        // Función para verificar palabras
+        function verificarPalabras() {
+            const palabra1 = document.getElementById('palabra1').value.trim().toLowerCase();
+            const palabra2 = document.getElementById('palabra2').value.trim().toLowerCase();
+
+            document.getElementById('palabra1').value = '';
+            document.getElementById('palabra2').value = '';
+
+            if (palabra1 === palabrasCorrectas[nivelActual][0] && palabra2 === palabrasCorrectas[nivelActual][1]) {
+                mensaje.innerText = "¡Yaiii! Encontraste la llave";
+                llave.style.display = 'block';
+                botonVerificar.style.display = 'none';
+
+                nivelActual++;
+                if (nivelActual < palabrasCorrectas.length) {
+                    setTimeout(reiniciarJuego, 2000);
+                } else {
+                    mensaje.innerText = "Paula y Fabián son libres, HAHAHAHAHAHAH";
+                    llave.style.display = 'none';
+                    botonVerificar.style.display = 'none';
+                    botonSiguienteJugador.style.display = 'none';
+                }
+            } else {
+                activarJumpscare();
+                mensaje.innerText = "¡Error! Intenta nuevamente.";
+            }
+        }
+
+        // Eventos
+        botonVerificar.addEventListener('click', verificarPalabras);
+        botonSiguienteJugador.addEventListener('click', reiniciarJuego);
+    </script>
+</body>
+</html>

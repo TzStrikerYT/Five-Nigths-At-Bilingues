@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      body {
+        background-color: #000;
+        color: #00ff00;
+        font-family: "Courier New", monospace;
+        padding: 20px;
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .terminal {
+        border: 1px solid #00ff00;
+        padding: 20px;
+        margin: 20px;
+        flex-grow: 1;
+      }
+
+      .prompt {
+        margin-bottom: 20px;
+      }
+
+      .prompt::before {
+        content: "root@system:~$ ";
+      }
+
+      .cursor {
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      .buttons {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        margin-top: 20px;
+      }
+
+      button {
+        background-color: transparent;
+        border: 1px solid #00ff00;
+        color: #00ff00;
+        padding: 10px 20px;
+        font-family: "Courier New", monospace;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      button:hover {
+        background-color: #00ff0022;
+      }
+
+      button:active {
+        background-color: #00ff0044;
+      }
+
+      .output {
+        margin-top: 20px;
+        min-height: 50px;
+        white-space: pre-wrap;
+        overflow-y: auto;
+        max-height: 300px;
+        padding: 10px;
+        border: 1px solid #00ff0044;
+      }
+
+      .typing-effect {
+        overflow: hidden;
+        border-right: 2px solid #00ff00;
+        white-space: nowrap;
+        animation: typing 3s steps(40, end);
+      }
+
+      @keyframes typing {
+        from {
+          width: 0;
+        }
+        to {
+          width: 100%;
+        }
+      }
+
+      .output::-webkit-scrollbar {
+        display: none; /* Chrome, Safari y Opera */
+      }
+
+      /* Nuevo estilo para el modo rojo */
+      .red-mode body,
+      .red-mode .terminal,
+      .red-mode button {
+        color: #ff0000;
+        border-color: #ff0000;
+      }
+
+      .input-container {
+        margin-top: 20px;
+      }
+
+      /* Estilos para el campo de entrada */
+      input[type="text"] {
+        width: calc(100% - 22px); /* Full width minus padding and border */
+        padding: 10px;
+        border: 1px solid #00ff00;
+        background-color: #000;
+        color: #00ff00;
+        font-family: "Courier New", monospace;
+        font-size: 16px;
+        box-sizing: border-box;
+        transition: border-color 0.3s ease;
+      }
+
+      input[type="text"]:focus {
+        outline: none;
+        border-color: #00ff00; /* Color del borde cuando está enfocado */
+      }
+
+      input[type="text"]::placeholder {
+        color: #00ff00; /* Color del placeholder */
+        opacity: 0.6; /* Opacidad del placeholder */
+      }
+
+      /* Estilo para el mensaje de error */
+      .error-message {
+        color: #ff0000; /* Color rojo */
+        font-size: 24px; /* Tamaño de fuente grande */
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="terminal">
+      <div class="prompt">
+        SYSTEM MESSAGE INTERFACE <span class="cursor">█</span>
+      </div>
+
+      <div class="buttons">
+        <button onclick="showMessage(1)">MESSAGE_01</button>
+        <button onclick="showMessage(2)">MESSAGE_02</button>
+        <button onclick="showMessage(3)">MESSAGE_03</button>
+        <button onclick="showMessage(4)">MESSAGE_04</button>
+        <button onclick="showMessage(5)">MESSAGE_05</button>
+        <button id="message6Btn" onclick="checkKeyword()">MESSAGE_06</button>
+      </div>
+
+      <div class="output" id="output"></div>
+
+      <div class="input-container">
+        <input autocomplete="off" type="text" id="keywordInput" placeholder="Enter the keyword to unlock MESSAGE_06" />
+      </div>
+    </div>
+
+    <!-- Audio elements for each message -->
+    <audio id="typingSound1" src="./audios/libertad.wav"></audio>
+    <audio id="typingSound2" src="path/to/audio2.mp3"></audio>
+    <audio id="typingSound3" src="path/to/audio3.mp3"></audio>
+    <audio id="typingSound4" src="path/to/audio4.mp3"></audio>
+    <audio id="typingSound5" src="path/to/audio5.mp3"></audio>
+    <audio id="typingSound6" src="./audios/ahora.wav"></audio>
+
+    <script>
+      const messages = {
+        1: `>>> Analizando primer mensaje...\n[DECODED] Primera pista encontrada...\n[MESSAGE] I'm the end of every chain, The awakening from all pain. When you find me, the bars break free, And bonds no longer tie thee. What am I?`,
+        2: `>>> Descifrando segunda pista...\n[DECODED] Mensaje oculto detectado...`,
+        3: `>>> Procesando tercer archivo...\n[DECODED] Información crítica encontrada...`,
+        4: `>>> Accediendo a cuarto registro...\n[DECODED] Datos sensibles recuperados...`,
+        5: `>>> Decodificando quinta señal...\n[DECODED] Patrón identificado...`,
+        6: `>>> Extrayendo mensaje final...\n[DECODED] Secuencia completada...\n[MESSAGE] I'm not yesterday, nor will I be tomorrow, I only exist for now without sorrow. When you name me, I've already passed, Yet by your side, I always last. What am I?`,
+      };
+
+      let messagesCompleted = 0; // Contador de mensajes completados
+
+      function typeWriter(text, element, index = 0, audio) {
+        if (index < text.length) {
+          element.innerHTML += text.charAt(index);
+          let delay = text.charAt(index) === "\n" || text.charAt(index) === "." ? 300 : 50;
+          setTimeout(() => typeWriter(text, element, index + 1, audio), delay);
+          element.scrollTop = element.scrollHeight;
+        }
+      }
+
+      function showMessage(number) {
+        const output = document.getElementById("output");
+        const timestamp = new Date().toLocaleTimeString();
+        const fullMessage = `[${timestamp}] ${messages[number]}\n\n`;
+
+        // Pausar y reiniciar todos los audios
+        for (let i = 1; i <= 6; i++) {
+          document.getElementById(`typingSound${i}`).pause();
+          document.getElementById(`typingSound${i}`).currentTime = 0;
+        }
+
+        const audio = document.getElementById(`typingSound${number}`);
+        audio.play(); // Reproduce el audio específico para el mensaje
+
+        // Limpiar el contenido anterior y empezar efecto de escritura
+        output.innerHTML = "";
+        typeWriter(fullMessage, output, 0, audio);
+
+        // Incrementar el contador de mensajes completados
+        messagesCompleted++;
+
+        // Aplicar modo rojo solo para el mensaje 6
+        if (number === 6) {
+          document.body.classList.add("red-mode");
+        } else {
+          document.body.classList.remove("red-mode");
+        }
+      }
+
+      function checkKeyword() {
+        const keywordInput = document.getElementById("keywordInput").value.toLowerCase();
+        const correctKeyword = "freedom"; // Cambia esto por la palabra clave que deseas usar
+        const output = document.getElementById("output");
+
+        // Limpiar la salida anterior antes de mostrar el mensaje de error
+        output.innerHTML = "";
+
+        if (messagesCompleted < 5) {
+          output.innerHTML = `<div class="error-message">YOU MUST COMPLETE ALL PREVIOUS MESSAGES BEFORE UNLOCKING THIS ONE.</div>`; // Mensaje de error en rojo
+        } else if (keywordInput === correctKeyword) {
+          showMessage(6); // Muestra el mensaje 6 si la palabra es correcta
+        } else {
+          output.innerHTML = `<div class="error-message">INCORRECT KEYWORD. TRY AGAIN.</div>`; // Mensaje de error en rojo
+        }
+      }
+    </script>
+  </body>
+</html>

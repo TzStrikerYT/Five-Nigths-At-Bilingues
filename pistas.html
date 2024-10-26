@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .terminal {
+            border: 1px solid #00ff00;
+            padding: 20px;
+            margin: 20px;
+            flex-grow: 1;
+        }
+
+        .prompt {
+            margin-bottom: 20px;
+        }
+
+        .prompt::before {
+            content: "root@system:~$ ";
+        }
+
+        .cursor {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: transparent;
+            border: 1px solid #00ff00;
+            color: #00ff00;
+            padding: 10px 20px;
+            font-family: 'Courier New', monospace;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #00ff0022;
+        }
+
+        button:active {
+            background-color: #00ff0044;
+        }
+
+        .output {
+            margin-top: 20px;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="prompt">
+            SYSTEM AUDIO INTERFACE <span class="cursor">█</span>
+        </div>
+        
+        <div class="buttons">
+            <button onclick="playAudio(1)">AUDIO_FILE_01</button>
+            <button onclick="playAudio(2)">AUDIO_FILE_02</button>
+            <button onclick="playAudio(3)">AUDIO_FILE_03</button>
+            <button onclick="playAudio(4)">AUDIO_FILE_04</button>
+            <button onclick="playAudio(5)">AUDIO_FILE_05</button>
+            <button onclick="playAudio(6)">AUDIO_FILE_06</button>
+        </div>
+
+        <div class="output" id="output"></div>
+    </div>
+
+    <script>
+        const audioFiles = {
+            1: './pista.mp3',
+            2: 'path_to_audio_2.mp3',
+            3: 'path_to_audio_3.mp3',
+            4: 'path_to_audio_4.mp3',
+            5: 'path_to_audio_5.mp3',
+            6: 'path_to_audio_6.mp3'
+        };
+
+        let currentAudio = null;
+
+        function playAudio(number) {
+            if (currentAudio) {
+                currentAudio.pause();
+                currentAudio.currentTime = 0;
+            }
+
+            const output = document.getElementById('output');
+            output.innerHTML += `[SYSTEM] Playing AUDIO_FILE_0${number}...<br>`;
+            output.scrollTop = output.scrollHeight;
+
+            // Create new audio instance
+            currentAudio = new Audio(audioFiles[number]);
+            currentAudio.play()
+                .catch(e => {
+                    output.innerHTML += `[ERROR] Failed to load audio file ${number}<br>`;
+                });
+
+            currentAudio.onended = () => {
+                output.innerHTML += `[SYSTEM] AUDIO_FILE_0${number} completed.<br>`;
+                output.scrollTop = output.scrollHeight;
+            };
+        }
+    </script>
+</body>
+</html>
